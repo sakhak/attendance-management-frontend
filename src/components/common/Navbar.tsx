@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "../icons";
+import { useAuth } from "../contexts/AuthContext";
+import { config } from "../utils/Config";
 
 type TabKey = "attendance" | "reports" | "blacklist";
 
@@ -12,67 +14,19 @@ type NavbarProps = {
 };
 
 export default function Navbar({
-  userName = "Synayuth",
-  userRole = "Teacher",
+  userName,
+  userRole,
   activeTab = "attendance",
   onTabChange,
 }: NavbarProps) {
+  const { user, logout } = useAuth();
+  // console.log(user?.first_name, user?.last_name, user?.name);
   return (
     <header className="w-full">
       <div className="bg-slate-900 text-white">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded bg-slate-800">
-              {/* <svg
-                width="25"
-                height="25"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18.6667 29.3333V24C18.6667 23.2928 18.3858 22.6145 17.8857 22.1144C17.3856 21.6143 16.7073 21.3333 16 21.3333C15.2928 21.3333 14.6145 21.6143 14.1144 22.1144C13.6143 22.6145 13.3334 23.2928 13.3334 24V29.3333"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M24 13.3333L28.596 15.632C28.8174 15.7426 29.0037 15.9128 29.1339 16.1233C29.2641 16.3338 29.3332 16.5764 29.3333 16.824V26.6667C29.3333 27.3739 29.0523 28.0522 28.5522 28.5523C28.0521 29.0524 27.3739 29.3333 26.6666 29.3333H5.33329C4.62605 29.3333 3.94777 29.0524 3.44767 28.5523C2.94758 28.0522 2.66663 27.3739 2.66663 26.6667V16.824C2.66676 16.5764 2.7358 16.3338 2.86603 16.1233C2.99625 15.9128 3.18252 15.7426 3.40396 15.632L7.99996 13.3333"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M24 6.66667V29.3333"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M5.33337 8.00001L14.808 3.26267C15.1782 3.07772 15.5863 2.98143 16 2.98143C16.4138 2.98143 16.8219 3.07772 17.192 3.26267L26.6667 8.00001"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M8 6.66667V29.3333"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M16 14.6667C17.4728 14.6667 18.6667 13.4728 18.6667 12C18.6667 10.5272 17.4728 9.33333 16 9.33333C14.5273 9.33333 13.3334 10.5272 13.3334 12C13.3334 13.4728 14.5273 14.6667 16 14.6667Z"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg> */}
               <Logo />
             </div>
 
@@ -123,39 +77,61 @@ export default function Navbar({
             <div className="mt-0.5 h-5 w-[1.5px]  bg-[#334155]" />
             <div className="flex items-center gap-3 ml-8">
               <div className="text-right leading-tight">
-                <div className="text-xs font-semibold mb-1">{userName}</div>
-                <div className="text-[11px] text-slate-300">{userRole}</div>
+                <div className="text-xs font-semibold mb-1">
+                  {user?.name ||
+                    (user?.first_name && user?.last_name
+                      ? `${user.first_name} ${user.last_name}`
+                      : userName || "User")}
+                </div>
+                <div className="text-[11px] text-slate-300">
+                  {user?.roles?.[0] || userRole || "Role"}
+                </div>
               </div>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11 21C16.5228 21 21 16.5228 21 11C21 5.47715 16.5228 1 11 1C5.47715 1 1 5.47715 1 11C1 16.5228 5.47715 21 11 21Z"
-                    stroke="#CBD5E1"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                {user?.avatar || user?.image ? (
+                  <img
+                    src={`${config.base_url}/storage/${user.avatar || user.image}`}
+                    alt="Profile"
+                    className="h-9 w-9 rounded-full object-cover"
+                    onError={() => {
+                      console.log(
+                        "Image failed to load:",
+                        `${config.base_url}/storage/${user.avatar || user.image}`,
+                      );
+                      console.log("User data:", user);
+                    }}
                   />
-                  <path
-                    d="M11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9C8 10.6569 9.34315 12 11 12Z"
-                    stroke="#CBD5E1"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M6 19.662V18C6 17.4696 6.21071 16.9609 6.58579 16.5858C6.96086 16.2107 7.46957 16 8 16H14C14.5304 16 15.0391 16.2107 15.4142 16.5858C15.7893 16.9609 16 17.4696 16 18V19.662"
-                    stroke="#CBD5E1"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                ) : (
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 22 22"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 21C16.5228 21 21 16.5228 21 11C21 5.47715 16.5228 1 11 1C5.47715 1 1 5.47715 1 11C1 16.5228 5.47715 21 11 21Z"
+                      stroke="#CBD5E1"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9C8 10.6569 9.34315 12 11 12Z"
+                      stroke="#CBD5E1"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M6 19.662V18C6 17.4696 6.21071 16.9609 6.58579 16.5858C6.96086 16.2107 7.46957 16 8 16H14C14.5304 16 15.0391 16.2107 15.4142 16.5858C15.7893 16.9609 16 17.4696 16 18V19.662"
+                      stroke="#CBD5E1"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                )}
               </div>
             </div>
           </div>
@@ -231,7 +207,10 @@ export default function Navbar({
               </svg>
               Settings
             </button>
-            <button className="inline-flex items-center gap-1.5 hover:text-slate-800">
+            <button
+              className="inline-flex items-center gap-1.5 hover:text-slate-800"
+              onClick={logout}
+            >
               <svg
                 width="16"
                 height="16"
