@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user data from localStorage
   React.useEffect(() => {
     const saved = localStorage.getItem("user");
     if (saved) {
