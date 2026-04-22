@@ -6,6 +6,8 @@ import LoginPage from "./pages/admin/auth/LoginPage";
 import RegisterPage from "./pages/admin/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/admin/auth/ForgotPasswordPage";
 import LayoutMainPage from "./pages/layout/LayoutMainPage";
+import DashboardPage from "./pages/admin/DashboardPage";
+import AttendancePage from "./pages/admin/AttendancePage";
 import NotfoundPage from "./pages/notfound/NotfoundPage";
 
 const App: React.FC = () => {
@@ -14,6 +16,9 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LayoutMainPage />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
           </Route>
 
           <Route path="/admin">

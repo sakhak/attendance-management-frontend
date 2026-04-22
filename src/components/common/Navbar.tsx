@@ -1,10 +1,10 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Logo } from "../icons";
 import { useAuth } from "../contexts/AuthContext";
 import { config } from "../utils/Config";
 
-type TabKey = "attendance" | "reports" | "blacklist";
+type TabKey = "dashboard" | "attendance" | "reports" | "blacklist";
 
 type NavbarProps = {
   userName?: string;
@@ -16,10 +16,38 @@ type NavbarProps = {
 export default function Navbar({
   userName,
   userRole,
-  activeTab = "attendance",
+  activeTab: activeTabProp,
   onTabChange,
 }: NavbarProps) {
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  // Determine active tab from location if not provided
+  const activeTab = React.useMemo(() => {
+    if (activeTabProp) return activeTabProp;
+    const path = location.pathname;
+    if (path === "/" || path === "/dashboard") return "dashboard";
+    if (path.includes("/attendance")) return "attendance";
+    if (path.includes("/reports")) return "reports";
+    if (path.includes("/blacklist")) return "blacklist";
+    return "dashboard";
+  }, [location.pathname, activeTabProp]);
+
+  const breadcrumbs = React.useMemo(() => {
+    const parts = [{ label: "Dashboard", path: "/dashboard" }];
+    if (activeTab === "attendance") {
+      parts.push({ label: "Academic", path: "#" });
+      parts.push({ label: "Attendance Register", path: "/attendance" });
+    } else if (activeTab === "reports") {
+      parts.push({ label: "Analytics", path: "#" });
+      parts.push({ label: "Reports", path: "/reports" });
+    } else if (activeTab === "blacklist") {
+      parts.push({ label: "Security", path: "#" });
+      parts.push({ label: "Blacklist", path: "/blacklist" });
+    }
+    return parts;
+  }, [activeTab]);
+
   // console.log(user?.first_name, user?.last_name, user?.name);
   return (
     <header className="w-full">
@@ -141,18 +169,20 @@ export default function Navbar({
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="hover:text-slate-700">
-              <a href="#">Dashboard</a>
-            </span>
-            <span className="text-slate-300">/</span>
-            <span className="hover:text-slate-700">
-              <a href="#">Academic</a>
-            </span>
-            <span className="text-slate-300">/</span>
-            <span className="hover:text-slate-700">
-              <a href="#">Attendance Register</a>
-            </span>
-            <span className="font-semibold text-slate-700"></span>
+            {breadcrumbs.map((crumb, index) => (
+              <React.Fragment key={index}>
+                <span className="hover:text-slate-700">
+                  {crumb.path === "#" ? (
+                    <span>{crumb.label}</span>
+                  ) : (
+                    <Link to={crumb.path}>{crumb.label}</Link>
+                  )}
+                </span>
+                {index < breadcrumbs.length - 1 && (
+                  <span className="text-slate-300">/</span>
+                )}
+              </React.Fragment>
+            ))}
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-500">
@@ -249,6 +279,36 @@ export default function Navbar({
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4">
           <nav className="flex gap-6">
+            <TabButton
+              label="Dashboard"
+              link="/dashboard"
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.5 10L10 2.5L17.5 10"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M4.16663 8.33334V15.8333C4.16663 16.2754 4.34222 16.6993 4.65478 17.0118C4.96734 17.3244 5.39126 17.5 5.83329 17.5H14.1666C14.6087 17.5 15.0326 17.3244 15.3451 17.0118C15.6577 16.6993 15.8333 16.2754 15.8333 15.8333V8.33334"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+              active={activeTab === "dashboard"}
+              onClick={() => onTabChange?.("dashboard")}
+            />
             <TabButton
               label="Attendance Recording"
               link="/attendance"

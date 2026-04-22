@@ -33,7 +33,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const response = await request("auth/login", "post", { email, password });
+      const response = await request("auth/login", "POST", { email, password });
       const userData = {
         ...response.user,
         ...(response.user.user_profile || {}),
