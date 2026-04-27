@@ -156,13 +156,9 @@ const Attendance = () => {
       }
 
       const rawList = extractArray(response);
-      const students = rawList.map((item: any) => ({
-        id: item.student_id || item.id,
-        rollNo: item.student_code || item.roll_no || String(item.student_id || item.id).padStart(3, '0'),
-        name: item.name || item.user?.name || (item.first_name ? `${item.first_name} ${item.last_name}` : "Unknown Student"),
-        status: item.status || null,
-        comment: item.comment || item.remark || ""
-      }));
+      const students = rawList
+        .filter(isStudentAttendanceRecord)
+        .map(mapStudentAttendanceRecord);
 
       setAttendanceData(students);
       setHasSearched(true);
@@ -353,18 +349,6 @@ const Attendance = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <button className="flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                  Print
-                </button>
-                <button className="flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                  Export Excel
-                </button>
-                <button className="flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 hover:bg-slate-50">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                  Export PDF
-                </button>
                 <button
                   onClick={handleSave}
                   disabled={attendanceData.length === 0}
@@ -456,7 +440,74 @@ const Attendance = () => {
                   ))}
                 </tbody>
               </table>
+
+              {/* Table Footer / Legend */}
+              <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/50 px-6 py-4">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Showing {attendanceData.length} students
+                </span>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></div>
+                    <span className="text-[11px] font-bold text-slate-600 uppercase">
+                      Present: {attendanceData.filter(s => s.status === "present").length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-200"></div>
+                    <span className="text-[11px] font-bold text-slate-600 uppercase">
+                      Absent: {attendanceData.filter(s => s.status === "absent").length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
+                    <span className="text-[11px] font-bold text-slate-600 uppercase">
+                      Permission: {attendanceData.filter(s => s.status === "permission").length}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Stats Summary Grid */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 pt-4">
+              <div className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Students</p>
+                <p className="text-3xl font-bold text-slate-900">{attendanceData.length}</p>
+                <p className="mt-2 text-[11px] text-slate-400 font-medium tracking-tight">Registered in selected class</p>
+              </div>
+
+              <div className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Average Attendance</p>
+                <p className="text-3xl font-bold text-slate-900">
+                  {attendanceData.length > 0 
+                    ? ((attendanceData.filter(s => s.status === "present").length / attendanceData.length) * 100).toFixed(1) 
+                    : "0.0"}%
+                </p>
+                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold tracking-tight">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  1.2% from last month
+                </div>
+              </div>
+
+              <div className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Pending Excuses</p>
+                <p className="text-3xl font-bold text-slate-900">
+                  {attendanceData.filter(s => s.status === "permission").length}
+                </p>
+                <p className="mt-2 text-[11px] text-orange-500 font-bold tracking-tight">Requires verification</p>
+              </div>
+            </div>
+
+            {/* Bottom Footer Section */}
+            <footer className="mt-12 flex flex-col items-center justify-between border-t border-slate-100 py-8 text-[11px] font-bold text-slate-400 md:flex-row">
+              <p>© 2025 SETEC Institute. All rights reserved.</p>
+              <div className="mt-4 flex gap-8 md:mt-0">
+                <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-slate-600 transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-slate-600 transition-colors">Support</a>
+              </div>
+            </footer>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center rounded-sm border border-slate-200 bg-white p-20 text-center shadow-sm">
@@ -473,5 +524,71 @@ const Attendance = () => {
     </div>
   );
 };
+
+function isStudentAttendanceRecord(item: any) {
+  const roles = extractRoles(item);
+  const hasStudentRole = roles.includes("student");
+  const hasNonStudentRole = roles.some((role) =>
+    ["admin", "teacher", "staff", "instructor"].includes(role),
+  );
+
+  if (hasStudentRole) return true;
+  if (hasNonStudentRole) return false;
+
+  return Boolean(
+    item?.student ||
+      item?.student_id ||
+      item?.student_code ||
+      item?.roll_no ||
+      item?.student?.student_code ||
+      item?.student?.roll_no,
+  );
+}
+
+function extractRoles(item: any) {
+  const rawRoles = [
+    item?.role,
+    item?.type,
+    item?.user_type,
+    item?.user?.role,
+    item?.user?.type,
+    item?.user?.user_type,
+    ...(Array.isArray(item?.roles) ? item.roles : []),
+    ...(Array.isArray(item?.user?.roles) ? item.user.roles : []),
+  ];
+
+  return rawRoles
+    .map((role) => {
+      if (typeof role === "string") return role;
+      return role?.name || role?.title || "";
+    })
+    .filter(Boolean)
+    .map((role) => String(role).toLowerCase());
+}
+
+function mapStudentAttendanceRecord(item: any): StudentAttendance {
+  const studentId = item?.student_id || item?.student?.id || item?.id;
+  const firstName = item?.first_name || item?.student?.first_name || item?.user?.first_name || item?.student?.user?.first_name;
+  const lastName = item?.last_name || item?.student?.last_name || item?.user?.last_name || item?.student?.user?.last_name;
+
+  return {
+    id: Number(studentId),
+    rollNo:
+      item?.student_code ||
+      item?.roll_no ||
+      item?.student?.student_code ||
+      item?.student?.roll_no ||
+      String(studentId).padStart(3, "0"),
+    name:
+      item?.student_name ||
+      item?.name ||
+      item?.student?.name ||
+      item?.user?.name ||
+      item?.student?.user?.name ||
+      (firstName ? `${firstName} ${lastName || ""}`.trim() : "Unknown Student"),
+    status: item?.status || null,
+    comment: item?.comment || item?.remark || "",
+  };
+}
 
 export default Attendance;

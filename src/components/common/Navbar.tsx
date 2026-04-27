@@ -4,7 +4,7 @@ import { Logo } from "../icons";
 import { useAuth } from "../contexts/AuthContext";
 import { config } from "../utils/Config";
 
-type TabKey = "dashboard" | "attendance" | "reports" | "blacklist";
+type TabKey = "dashboard" | "attendance" | "reports" | "blacklist" | "terms" | "classes" | "teachers" | "students" | "sessions" | "settings";
 
 type NavbarProps = {
   userName?: string;
@@ -21,6 +21,8 @@ export default function Navbar({
 }: NavbarProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const displayRole = getDisplayRole(user?.roles, userRole);
 
   // Determine active tab from location if not provided
   const activeTab = React.useMemo(() => {
@@ -30,17 +32,31 @@ export default function Navbar({
     if (path.includes("/attendance")) return "attendance";
     if (path.includes("/reports")) return "reports";
     if (path.includes("/blacklist")) return "blacklist";
+    if (path.includes("/terms")) return "terms";
+    if (path.includes("/classes")) return "classes";
+    if (path.includes("/teachers")) return "teachers";
+    if (path.includes("/students")) return "students";
+    if (path.includes("/sessions")) return "sessions";
+    if (path.includes("/settings")) return "settings";
     return "dashboard";
   }, [location.pathname, activeTabProp]);
 
   const breadcrumbs = React.useMemo(() => {
     const parts = [{ label: "Dashboard", path: "/dashboard" }];
-    if (activeTab === "attendance") {
+    const titles: Record<string, string> = {
+      attendance: "Attendance Register",
+      reports: "Analytics",
+      terms: "Term Management",
+      classes: "Class Management",
+      teachers: "Teacher Management",
+      students: "Student Enrollments",
+      sessions: "Class Sessions",
+      settings: "System Settings",
+    };
+
+    if (titles[activeTab]) {
       parts.push({ label: "Academic", path: "#" });
-      parts.push({ label: "Attendance Register", path: "/attendance" });
-    } else if (activeTab === "reports") {
-      parts.push({ label: "Analytics", path: "#" });
-      parts.push({ label: "Reports", path: "/reports" });
+      parts.push({ label: titles[activeTab], path: `/${activeTab}` });
     } else if (activeTab === "blacklist") {
       parts.push({ label: "Security", path: "#" });
       parts.push({ label: "Blacklist", path: "/blacklist" });
@@ -112,7 +128,7 @@ export default function Navbar({
                       : userName || "User")}
                 </div>
                 <div className="text-[11px] text-slate-300">
-                  {user?.roles?.[0] || userRole || "Role"}
+                  {displayRole}
                 </div>
               </div>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800">
@@ -186,7 +202,10 @@ export default function Navbar({
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-500">
-            <button className="inline-flex items-center gap-1.5 hover:text-slate-800">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="inline-flex items-center gap-1.5 hover:text-slate-800"
+            >
               <svg
                 width="18"
                 height="17"
@@ -205,7 +224,10 @@ export default function Navbar({
               </svg>
               History
             </button>
-            <button className="inline-flex items-center gap-1.5 hover:text-slate-800">
+            <button
+              onClick={() => navigate("/settings")}
+              className={`inline-flex items-center gap-1.5 hover:text-slate-800 ${activeTab === "settings" ? "text-slate-900 font-bold" : ""}`}
+            >
               <svg
                 width="16"
                 height="16"
@@ -424,7 +446,7 @@ export default function Navbar({
                 >
                   <g clip-path="url(#clip0_3_84)">
                     <path
-                      d="M18.1083 15L11.4417 3.33333C11.2963 3.07684 11.0855 2.86349 10.8308 2.71506C10.576 2.56662 10.2865 2.48842 9.99167 2.48842C9.69685 2.48842 9.4073 2.56662 9.15257 2.71506C8.89783 2.86349 8.68703 3.07684 8.54167 3.33333L1.875 15C1.72807 15.2545 1.65103 15.5433 1.65168 15.8371C1.65233 16.1309 1.73065 16.4194 1.87871 16.6732C2.02676 16.927 2.23929 17.1372 2.49475 17.2824C2.7502 17.4276 3.03951 17.5026 3.33334 17.5H16.6667C16.9591 17.4997 17.2463 17.4225 17.4994 17.2761C17.7525 17.1297 17.9627 16.9192 18.1088 16.6659C18.2548 16.4126 18.3317 16.1253 18.3316 15.8329C18.3316 15.5405 18.2545 15.2532 18.1083 15Z"
+                      d="M18.1083 15L11.4417 3.33333C11.2963 3.07684 11.0855 2.86349 10.8308 2.71506C10.576 2.56662 10.2865 2.48842 9.99167 2.48842C9.69685 2.48842 10.2865 2.48842 9.99167 2.48842C9.69685 2.48842 9.4073 2.56662 9.15257 2.71506C8.89783 2.86349 8.68703 3.07684 8.54167 3.33333L1.875 15C1.72807 15.2545 1.65103 15.5433 1.65168 15.8371C1.65233 16.1309 1.73065 16.4194 1.87871 16.6732C2.02676 16.927 2.23929 17.1372 2.49475 17.2824C2.7502 17.4276 3.03951 17.5026 3.33334 17.5H16.6667C16.9591 17.4997 17.2463 17.4225 17.4994 17.2761C17.7525 17.1297 17.9627 16.9192 18.1088 16.6659C18.2548 16.4126 18.3317 16.1253 18.3316 15.8329C18.3316 15.5405 18.2545 15.2532 18.1083 15Z"
                       stroke="#9CA3AF"
                       stroke-width="2"
                       stroke-linecap="round"
@@ -455,11 +477,64 @@ export default function Navbar({
               active={activeTab === "blacklist"}
               onClick={() => onTabChange?.("blacklist")}
             />
+            <div className="h-6 w-[1px] bg-slate-200 self-center mx-2" />
+            <TabButton
+              label="Terms"
+              link="/terms"
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>}
+              active={activeTab === "terms"}
+              onClick={() => onTabChange?.("terms")}
+            />
+            <TabButton
+              label="Classes"
+              link="/classes"
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>}
+              active={activeTab === "classes"}
+              onClick={() => onTabChange?.("classes")}
+            />
+            <TabButton
+              label="Teachers"
+              link="/teachers"
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>}
+              active={activeTab === "teachers"}
+              onClick={() => onTabChange?.("teachers")}
+            />
+            <TabButton
+              label="Students"
+              link="/students"
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
+              active={activeTab === "students"}
+              onClick={() => onTabChange?.("students")}
+            />
+            <TabButton
+              label="Sessions"
+              link="/sessions"
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>}
+              active={activeTab === "sessions"}
+              onClick={() => onTabChange?.("sessions")}
+            />
           </nav>
         </div>
       </div>
     </header>
   );
+}
+
+function getDisplayRole(
+  roles?: Array<string | { name?: string; key?: string; title?: string }>,
+  fallbackRole?: string,
+) {
+  const firstRole = roles?.[0];
+
+  if (typeof firstRole === "string" && firstRole.trim()) {
+    return firstRole;
+  }
+
+  if (firstRole && typeof firstRole === "object") {
+    return firstRole.name || firstRole.key || firstRole.title || fallbackRole || "Role";
+  }
+
+  return fallbackRole || "Role";
 }
 
 function TabButton({

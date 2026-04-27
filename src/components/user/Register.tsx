@@ -13,6 +13,8 @@ export default function Register() {
     password: "",
     password_confirmation: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState("");
 
@@ -207,7 +209,7 @@ export default function Register() {
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
@@ -219,7 +221,8 @@ export default function Register() {
                     />
                     <button
                       type="button"
-                      aria-label="Toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="absolute inset-y-0 right-2 inline-flex items-center justify-center rounded px-2 text-slate-400 hover:text-slate-600"
                     >
                       <svg
@@ -228,17 +231,41 @@ export default function Register() {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path
-                          d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                        />
+                        {showPassword ? (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                            <path
+                              d="m2 2 20 20"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                          </>
+                        )}
                       </svg>
                     </button>
                   </div>
@@ -248,17 +275,68 @@ export default function Register() {
                   <label className="text-xs font-medium text-slate-600">
                     Confirm Password
                   </label>
-                  <input
-                    type="password"
-                    name="password_confirmation"
-                    value={formData.password_confirmation}
-                    onChange={handleChange}
-                    placeholder="Confirm your password"
-                    className={`h-10 w-full rounded border px-3 text-sm outline-none transition focus:ring-2 ${errors.password_confirmation
-                      ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200"
-                      : "border-slate-200 bg-white focus:border-slate-400 focus:ring-slate-200"
-                      }`}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="password_confirmation"
+                      value={formData.password_confirmation}
+                      onChange={handleChange}
+                      placeholder="Confirm your password"
+                      className={`h-10 w-full rounded border px-3 pr-10 text-sm outline-none transition focus:ring-2 ${errors.password_confirmation
+                        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200"
+                        : "border-slate-200 bg-white focus:border-slate-400 focus:ring-slate-200"
+                        }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      className="absolute inset-y-0 right-2 inline-flex items-center justify-center rounded px-2 text-slate-400 hover:text-slate-600"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        {showConfirmPassword ? (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                            <path
+                              d="m2 2 20 20"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                          </>
+                        )}
+                      </svg>
+                    </button>
+                  </div>
                   {errors.password_confirmation && (
                     <p className="text-xs text-red-500">{errors.password_confirmation}</p>
                   )}

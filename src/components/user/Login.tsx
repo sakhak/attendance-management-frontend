@@ -9,6 +9,7 @@ export default function Login() {
   const [loading, setLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [errors, setErrors] = React.useState({ email: "", password: "" });
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -37,7 +38,13 @@ export default function Login() {
       const userData = {
         ...response.user,
         ...(response.user.user_profile || {}),
-        token: response.token || response.user.token,
+        token:
+          response.token ||
+          response.access_token ||
+          response.plainTextToken ||
+          response.api_token ||
+          response.user.token ||
+          response.user.access_token,
       };
       console.log("Login response:", response);
       console.log("User data after merge:", userData);
@@ -179,7 +186,7 @@ export default function Login() {
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       required
                       value={password}
@@ -201,7 +208,8 @@ export default function Login() {
                     )}
                     <button
                       type="button"
-                      aria-label="Toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="absolute inset-y-0 right-2 inline-flex items-center justify-center rounded px-2 text-slate-400 hover:text-slate-600"
                     >
                       <svg
@@ -210,17 +218,41 @@ export default function Login() {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path
-                          d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                        />
+                        {showPassword ? (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                            <path
+                              d="m2 2 20 20"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <path
+                              d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                            />
+                          </>
+                        )}
                       </svg>
                     </button>
                   </div>

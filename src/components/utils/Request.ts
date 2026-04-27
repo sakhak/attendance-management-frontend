@@ -7,7 +7,14 @@ export const request = async (
   data: Record<string, unknown> | FormData = {},
 ) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  const token = user?.token || "";
+  const token =
+    user?.token ||
+    user?.access_token ||
+    user?.plainTextToken ||
+    user?.api_token ||
+    user?.user?.token ||
+    user?.user?.access_token ||
+    "";
 
   const headers: Record<string, string> = {
     Accept: "application/json",
