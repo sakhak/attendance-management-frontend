@@ -13,6 +13,9 @@ interface Term {
 const TermManager = () => {
   const [loading, setLoading] = useState(false);
   const [terms, setTerms] = useState<Term[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("start-desc");
   const [showModal, setShowModal] = useState(false);
   const [editTerm, setEditTerm] = useState<Term | null>(null);
   const [formData, setFormData] = useState({
@@ -93,6 +96,25 @@ const TermManager = () => {
     }
   };
 
+  const filteredTerms = terms
+    .filter((term) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        term.name?.toLowerCase().includes(query) ||
+        String(term.id).includes(query);
+
+      const termStatus = getTermStatus(term);
+      const matchesStatus = statusFilter === "all" || termStatus === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return a.name.localeCompare(b.name);
+      if (sortBy === "start-asc") return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+      return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+    });
+
   return (
     <div className="p-6">
       {loading && <Loading />}
@@ -111,6 +133,35 @@ const TermManager = () => {
           </button>
         </div>
 
+        <div className="grid gap-4 rounded-sm border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search term"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="all">All terms</option>
+            <option value="active">Active</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="ended">Ended</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="start-desc">Sort: Latest start date</option>
+            <option value="start-asc">Sort: Earliest start date</option>
+            <option value="name-asc">Sort: Name A-Z</option>
+          </select>
+        </div>
+
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm rounded-sm">
           <table className="w-full border-collapse">
             <thead>
@@ -123,8 +174,8 @@ const TermManager = () => {
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
-              {terms.length > 0 ? (
-                terms.map((term) => (
+              {filteredTerms.length > 0 ? (
+                filteredTerms.map((term) => (
                   <tr key={term.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="p-4">{term.id}</td>
                     <td className="p-4 font-bold text-slate-800">{term.name}</td>
@@ -138,7 +189,7 @@ const TermManager = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-slate-400 italic">No terms found. Add one to get started.</td>
+                  <td colSpan={5} className="p-12 text-center text-slate-400 italic">No terms match the current search and filters.</td>
                 </tr>
               )}
             </tbody>
@@ -206,5 +257,15 @@ const TermManager = () => {
     </div>
   );
 };
+
+function getTermStatus(term: Term) {
+  const now = new Date().getTime();
+  const start = new Date(term.start_date).getTime();
+  const end = new Date(term.end_date).getTime();
+
+  if (start <= now && end >= now) return "active";
+  if (start > now) return "upcoming";
+  return "ended";
+}
 
 export default TermManager;

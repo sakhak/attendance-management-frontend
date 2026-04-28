@@ -30,6 +30,9 @@ type UserOption = {
 const StudentManager = () => {
   const [loading, setLoading] = useState(false);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [classFilter, setClassFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name-asc");
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<Enrollment | null>(null);
   const [users, setUsers] = useState<UserOption[]>([]); 
@@ -176,6 +179,33 @@ const StudentManager = () => {
     }
   };
 
+  const filteredEnrollments = enrollments
+    .filter((item) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        item.student?.student_code?.toLowerCase().includes(query) ||
+        item.student?.user?.name?.toLowerCase().includes(query) ||
+        item.classes?.name?.toLowerCase().includes(query);
+
+      const matchesClass =
+        classFilter === "all" || String(item.class_id) === classFilter;
+
+      return matchesSearch && matchesClass;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") {
+        return (a.student?.user?.name || "").localeCompare(b.student?.user?.name || "");
+      }
+      if (sortBy === "class-asc") {
+        return (a.classes?.name || "").localeCompare(b.classes?.name || "");
+      }
+      if (sortBy === "code-asc") {
+        return (a.student?.student_code || "").localeCompare(b.student?.student_code || "");
+      }
+      return Number(a.id) - Number(b.id);
+    });
+
   return (
     <div className="p-6">
       {loading && <Loading />}
@@ -194,6 +224,38 @@ const StudentManager = () => {
           </button>
         </div>
 
+        <div className="grid gap-4 rounded-sm border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search student, code, or class"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="all">All classes</option>
+            {classes.map((classItem) => (
+              <option key={classItem.id} value={String(classItem.id)}>
+                {classItem.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="name-asc">Sort: Student A-Z</option>
+            <option value="class-asc">Sort: Class</option>
+            <option value="code-asc">Sort: Code</option>
+            <option value="id-asc">Sort: Oldest first</option>
+          </select>
+        </div>
+
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm rounded-sm">
           <table className="w-full border-collapse">
             <thead>
@@ -205,8 +267,8 @@ const StudentManager = () => {
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
-              {enrollments.length > 0 ? (
-                enrollments.map((item) => (
+              {filteredEnrollments.length > 0 ? (
+                filteredEnrollments.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="p-4 font-mono text-xs font-bold text-slate-400">{item.student?.student_code}</td>
                     <td className="p-4 font-bold text-slate-800">{item.student?.user?.name || "N/A"}</td>
@@ -218,7 +280,7 @@ const StudentManager = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No enrollments found.</td>
+                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No enrollments match the current search and filters.</td>
                 </tr>
               )}
             </tbody>

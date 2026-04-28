@@ -169,11 +169,10 @@ export default function Login() {
                       if (errors.email)
                         setErrors((prev) => ({ ...prev, email: "" }));
                     }}
-                    className={`h-10 w-full rounded border px-3 text-sm outline-none transition focus:ring-2 ${
-                      errors.email
+                    className={`h-10 w-full rounded border px-3 text-sm outline-none transition focus:ring-2 ${errors.email
                         ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200"
                         : "border-slate-200 bg-white focus:border-slate-400 focus:ring-slate-200"
-                    }`}
+                      }`}
                   />
                   {errors.email && (
                     <p className="text-xs text-red-500 mt-1">{errors.email}</p>
@@ -195,11 +194,10 @@ export default function Login() {
                         if (errors.password)
                           setErrors((prev) => ({ ...prev, password: "" }));
                       }}
-                      className={`h-10 w-full rounded border px-3 pr-10 text-sm outline-none transition focus:ring-2 ${
-                        errors.password
+                      className={`h-10 w-full rounded border px-3 pr-10 text-sm outline-none transition focus:ring-2 ${errors.password
                           ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200"
                           : "border-slate-200 bg-white focus:border-slate-400 focus:ring-slate-200"
-                      }`}
+                        }`}
                     />
                     {errors.password && (
                       <p className="text-xs text-red-500 mt-1">
@@ -327,7 +325,7 @@ export default function Login() {
 
           <div className="mt-8 text-center">
             <p className="text-[11px] text-slate-400">
-              © 2025 SETEC Institute. All rights reserved.
+              © 2026 SETEC Institute. All rights reserved.
             </p>
             <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-slate-400">
               <a href="#" className="hover:text-slate-600 hover:underline">

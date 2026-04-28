@@ -480,8 +480,8 @@ const Attendance = () => {
               <div className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Average Attendance</p>
                 <p className="text-3xl font-bold text-slate-900">
-                  {attendanceData.length > 0 
-                    ? ((attendanceData.filter(s => s.status === "present").length / attendanceData.length) * 100).toFixed(1) 
+                  {attendanceData.length > 0
+                    ? ((attendanceData.filter(s => s.status === "present").length / attendanceData.length) * 100).toFixed(1)
                     : "0.0"}%
                 </p>
                 <div className="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold tracking-tight">
@@ -501,7 +501,7 @@ const Attendance = () => {
 
             {/* Bottom Footer Section */}
             <footer className="mt-12 flex flex-col items-center justify-between border-t border-slate-100 py-8 text-[11px] font-bold text-slate-400 md:flex-row">
-              <p>© 2025 SETEC Institute. All rights reserved.</p>
+              <p>© 2026 SETEC Institute. All rights reserved.</p>
               <div className="mt-4 flex gap-8 md:mt-0">
                 <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
                 <a href="#" className="hover:text-slate-600 transition-colors">Terms of Service</a>
@@ -537,11 +537,11 @@ function isStudentAttendanceRecord(item: any) {
 
   return Boolean(
     item?.student ||
-      item?.student_id ||
-      item?.student_code ||
-      item?.roll_no ||
-      item?.student?.student_code ||
-      item?.student?.roll_no,
+    item?.student_id ||
+    item?.student_code ||
+    item?.roll_no ||
+    item?.student?.student_code ||
+    item?.student?.roll_no,
   );
 }
 

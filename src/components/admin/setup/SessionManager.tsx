@@ -18,6 +18,9 @@ interface Session {
 const SessionManager = () => {
   const [loading, setLoading] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dayFilter, setDayFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("day-time");
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<Session | null>(null);
   
@@ -136,6 +139,43 @@ const SessionManager = () => {
     }
   };
 
+  const filteredSessions = sessions
+    .filter((item) => {
+      const query = searchTerm.trim().toLowerCase();
+      const className =
+        item.class?.name || classes.find((c) => String(c.id) === String(item.class_id))?.name || "";
+      const teacherName =
+        item.teacher?.user?.name ||
+        teachers.find((t) => String(t.id) === String(item.teacher_id))?.user?.name ||
+        teachers.find((t) => String(t.id) === String(item.teacher_id))?.name ||
+        "";
+      const termName =
+        item.term?.name || terms.find((t) => String(t.id) === String(item.term_id))?.name || "";
+
+      const matchesSearch =
+        !query ||
+        className.toLowerCase().includes(query) ||
+        teacherName.toLowerCase().includes(query) ||
+        termName.toLowerCase().includes(query) ||
+        item.day_of_week?.toLowerCase().includes(query);
+
+      const matchesDay = dayFilter === "all" || item.day_of_week === dayFilter;
+
+      return matchesSearch && matchesDay;
+    })
+    .sort((a, b) => {
+      if (sortBy === "class-asc") {
+        const aName = a.class?.name || classes.find((c) => String(c.id) === String(a.class_id))?.name || "";
+        const bName = b.class?.name || classes.find((c) => String(c.id) === String(b.class_id))?.name || "";
+        return aName.localeCompare(bName);
+      }
+
+      const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const dayDiff = dayOrder.indexOf(a.day_of_week || "") - dayOrder.indexOf(b.day_of_week || "");
+      if (dayDiff !== 0) return dayDiff;
+      return (a.start_time || "").localeCompare(b.start_time || "");
+    });
+
   return (
     <div className="p-6">
       {loading && <Loading />}
@@ -154,6 +194,34 @@ const SessionManager = () => {
           </button>
         </div>
 
+        <div className="grid gap-4 rounded-sm border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search class, teacher, term, or day"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+          <select
+            value={dayFilter}
+            onChange={(e) => setDayFilter(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="all">All days</option>
+            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+              <option key={day} value={day}>{day}</option>
+            ))}
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="day-time">Sort: Day and time</option>
+            <option value="class-asc">Sort: Class A-Z</option>
+          </select>
+        </div>
+
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm rounded-sm">
           <table className="w-full border-collapse">
             <thead>
@@ -166,8 +234,8 @@ const SessionManager = () => {
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
-              {sessions.length > 0 ? (
-                sessions.map((item) => (
+              {filteredSessions.length > 0 ? (
+                filteredSessions.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="p-4 font-medium">
                       {item.term?.name || terms.find(t => String(t.id) === String(item.term_id))?.name || "N/A"}
@@ -192,7 +260,7 @@ const SessionManager = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-slate-400 italic">No class sessions defined.</td>
+                  <td colSpan={5} className="p-12 text-center text-slate-400 italic">No sessions match the current search and filters.</td>
                 </tr>
               )}
             </tbody>

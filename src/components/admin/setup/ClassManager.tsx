@@ -12,6 +12,9 @@ interface ClassItem {
 const ClassManager = () => {
   const [loading, setLoading] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roomFilter, setRoomFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name-asc");
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<ClassItem | null>(null);
   const [formData, setFormData] = useState({
@@ -88,6 +91,30 @@ const ClassManager = () => {
     }
   };
 
+  const filteredClasses = classes
+    .filter((item) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        item.name?.toLowerCase().includes(query) ||
+        item.room_number?.toLowerCase().includes(query) ||
+        String(item.id).includes(query);
+
+      const hasRoom = Boolean(item.room_number?.trim());
+      const matchesRoomFilter =
+        roomFilter === "all" ||
+        (roomFilter === "with-room" && hasRoom) ||
+        (roomFilter === "no-room" && !hasRoom);
+
+      return matchesSearch && matchesRoomFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return a.name.localeCompare(b.name);
+      if (sortBy === "name-desc") return b.name.localeCompare(a.name);
+      if (sortBy === "room-asc") return (a.room_number || "").localeCompare(b.room_number || "");
+      return Number(a.id) - Number(b.id);
+    });
+
   return (
     <div className="p-6">
       {loading && <Loading />}
@@ -106,6 +133,35 @@ const ClassManager = () => {
           </button>
         </div>
 
+        <div className="grid gap-4 rounded-sm border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search class or room"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+          <select
+            value={roomFilter}
+            onChange={(e) => setRoomFilter(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="all">All rooms</option>
+            <option value="with-room">With room</option>
+            <option value="no-room">No room</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="name-asc">Sort: Name A-Z</option>
+            <option value="name-desc">Sort: Name Z-A</option>
+            <option value="room-asc">Sort: Room</option>
+            <option value="id-asc">Sort: Oldest first</option>
+          </select>
+        </div>
+
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm rounded-sm">
           <table className="w-full border-collapse">
             <thead>
@@ -117,8 +173,8 @@ const ClassManager = () => {
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
-              {classes.length > 0 ? (
-                classes.map((item) => (
+              {filteredClasses.length > 0 ? (
+                filteredClasses.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="p-4">{item.id}</td>
                     <td className="p-4 font-bold text-slate-800">{item.name}</td>
@@ -131,7 +187,7 @@ const ClassManager = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No classes found. Add one to get started.</td>
+                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No classes match the current search and filters.</td>
                 </tr>
               )}
             </tbody>

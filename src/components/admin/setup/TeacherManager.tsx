@@ -15,6 +15,9 @@ interface Teacher {
 const TeacherManager = () => {
   const [loading, setLoading] = useState(false);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [emailFilter, setEmailFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name-asc");
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<Teacher | null>(null);
   const [users, setUsers] = useState<any[]>([]); // To select from existing users
@@ -115,6 +118,30 @@ const TeacherManager = () => {
     }
   };
 
+  const filteredTeachers = teachers
+    .filter((item) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        item.teacher_code?.toLowerCase().includes(query) ||
+        item.user?.name?.toLowerCase().includes(query) ||
+        item.user?.email?.toLowerCase().includes(query);
+
+      const hasEmail = Boolean(item.user?.email?.trim());
+      const matchesEmailFilter =
+        emailFilter === "all" ||
+        (emailFilter === "with-email" && hasEmail) ||
+        (emailFilter === "no-email" && !hasEmail);
+
+      return matchesSearch && matchesEmailFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return (a.user?.name || "").localeCompare(b.user?.name || "");
+      if (sortBy === "name-desc") return (b.user?.name || "").localeCompare(a.user?.name || "");
+      if (sortBy === "code-asc") return (a.teacher_code || "").localeCompare(b.teacher_code || "");
+      return Number(a.id) - Number(b.id);
+    });
+
   return (
     <div className="p-6">
       {loading && <Loading />}
@@ -133,6 +160,35 @@ const TeacherManager = () => {
           </button>
         </div>
 
+        <div className="grid gap-4 rounded-sm border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search teacher, code, or email"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          />
+          <select
+            value={emailFilter}
+            onChange={(e) => setEmailFilter(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="all">All teachers</option>
+            <option value="with-email">With email</option>
+            <option value="no-email">Without email</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400"
+          >
+            <option value="name-asc">Sort: Name A-Z</option>
+            <option value="name-desc">Sort: Name Z-A</option>
+            <option value="code-asc">Sort: Code</option>
+            <option value="id-asc">Sort: Oldest first</option>
+          </select>
+        </div>
+
         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm rounded-sm">
           <table className="w-full border-collapse">
             <thead>
@@ -144,8 +200,8 @@ const TeacherManager = () => {
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
-              {teachers.length > 0 ? (
-                teachers.map((item) => (
+              {filteredTeachers.length > 0 ? (
+                filteredTeachers.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="p-4 font-mono text-xs font-bold text-slate-400">{item.teacher_code}</td>
                     <td className="p-4 font-bold text-slate-800">{item.user?.name || "N/A"}</td>
@@ -157,7 +213,7 @@ const TeacherManager = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No teachers found.</td>
+                  <td colSpan={4} className="p-12 text-center text-slate-400 italic">No teachers match the current search and filters.</td>
                 </tr>
               )}
             </tbody>
