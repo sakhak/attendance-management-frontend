@@ -142,7 +142,7 @@ export default function ForgotPassword() {
 
         <div className="mt-8 text-center">
           <p className="text-[11px] text-slate-400">
-            © 2025 SETEC Institute. All rights reserved.
+            © 2026 SETEC Institute. All rights reserved.
           </p>
           <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-slate-400">
             <a href="#" className="hover:text-slate-600 hover:underline">

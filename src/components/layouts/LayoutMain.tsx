@@ -38,11 +38,15 @@ const LayoutMain = () => {
 
   console.log("LayoutMain - rendering authenticated content");
   return (
-    <>
+    <div className="min-h-screen bg-slate-100">
       <Navbar />
-      <Outlet />
-      <Footer />
-    </>
+      <div className="md:pl-72">
+        <main className="min-h-[calc(100vh-4rem)] px-4 py-4 md:px-8 md:py-6">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </div>
   );
 };
 

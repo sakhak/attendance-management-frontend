@@ -7,7 +7,14 @@ export const request = async (
   data: Record<string, unknown> | FormData = {},
 ) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  const token = user?.token || "";
+  const token =
+    user?.token ||
+    user?.access_token ||
+    user?.plainTextToken ||
+    user?.api_token ||
+    user?.user?.token ||
+    user?.user?.access_token ||
+    "";
 
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -18,8 +25,11 @@ export const request = async (
   if (data instanceof FormData) delete headers["Content-Type"];
 
   try {
+    const finalUrl = config.api_url + (url.startsWith("/") ? url : "/" + url);
+    console.log(`Sending ${method} to ${finalUrl}`, data);
+    
     const res = await axios({
-      url: config.api_url + (url.startsWith("/") ? url : "/" + url),
+      url: finalUrl,
       method,
       data,
       headers,
@@ -29,20 +39,25 @@ export const request = async (
     return res.data;
   } catch (err) {
     if (!axios.isAxiosError(err) || !err.response) {
-      localStorage.removeItem("user");
-      window.location.href = "/admin/login";
+      // For network errors, don't redirect to login automatically
+      // as it might be a temporary server issue
+      console.error("Network error or server down:", err);
       throw err;
     }
 
     const status = err.response.status;
-    if (status === 401 || status === 403) {
-      // Don't redirect for auth endpoints, let the component handle the error
-      if (!url.includes("admin/login") && !url.includes("admin/register")) {
+    if (status === 401) {
+      // Only redirect if we are not already on an auth page
+      if (
+        !window.location.pathname.includes("/login") &&
+        !window.location.pathname.includes("/register")
+      ) {
+        console.warn("Session expired or invalid, redirecting to login...");
         localStorage.removeItem("user");
         window.location.href = "/admin/login";
       }
     }
 
-    throw err.response.data;
+    throw err.response.data || err;
   }
 };

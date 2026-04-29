@@ -17,7 +17,7 @@ export interface User {
   gender?: string;
   date_of_birth?: string;
   address?: string;
-  roles?: string[];
+  roles?: Array<string | { name?: string; key?: string; title?: string }>;
   token?: string;
   avatar?: string;
   image?: string;
@@ -64,7 +64,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("user");
   };
   const hasRole = (permission: string) => {
-    return user?.roles?.includes(permission) || false;
+    const roles =
+      user?.roles
+        ?.map((role) => {
+          if (typeof role === "string") return role;
+          return role?.name || role?.key || role?.title || "";
+        })
+        .filter(Boolean)
+        .map((role) => String(role).toLowerCase()) || [];
+
+    return roles.includes(permission.toLowerCase());
   };
   const isAuthenticated = !!user?.token;
 
