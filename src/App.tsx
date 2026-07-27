@@ -7,6 +7,10 @@ import RegisterPage from "./pages/admin/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/admin/auth/ForgotPasswordPage";
 import LayoutMainPage from "./pages/layout/LayoutMainPage";
 import NotfoundPage from "./pages/notfound/NotfoundPage";
+import AttendanceReportPage from "./pages/admin/ReportExport/AttendanceReportPage";
+import { ReportProvider } from "./components/contexts/ReportDataContext";
+
+
 
 const App: React.FC = () => {
   return (
@@ -14,8 +18,8 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LayoutMainPage />}>
+              <Route path="/reports" element={<AttendanceReportPage />} />
           </Route>
-
           <Route path="/admin">
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
@@ -26,7 +30,6 @@ const App: React.FC = () => {
             <Route path="register" element={<RegisterPage />} />
             <Route path="recovery" element={<ForgotPasswordPage />} />
           </Route>
-
           <Route path="*" element={<NotfoundPage />} />
         </Routes>
       </BrowserRouter>
